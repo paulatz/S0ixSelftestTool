@@ -1138,12 +1138,12 @@ debug_ltr_value() {
     echo 0 >/sys/class/rtc/rtc0/wakealarm
     echo +$duration >/sys/class/rtc/rtc0/wakealarm
 
-    if turbostat_after_s2idle=$("$DIR"/turbostat --quiet --show "$TURBO_COLUMNS" \
+    if turbostat_after_s2idle=$("$DIR"/turbostat --quiet --show "Pk%pc10,SYS%LPI" \
       echo freeze 2>&1 >/sys/power/state); then
       pc10=$(echo "$turbostat_after_s2idle" | sed -n '/Pk\%pc10/{n;p}' |
-        awk '{print $11}')
+        awk '{print $1}')
       slp_s0=$(echo "$turbostat_after_s2idle" | sed -n '/SYS\%LPI/{n;p}' |
-        awk '{print $12}')
+        awk '{print $2')
       log_output "PC10 residency is:$pc10"
       log_output "S0ix residency is:$slp_s0"
     else
@@ -1151,6 +1151,7 @@ debug_ltr_value() {
       exit 0
     fi
 
+    echo STOCAZ: $slp_s0
     if [ "$(echo "scale=2; $slp_s0 > 0.00" | bc)" -eq 1 ]; then
       log_output "\nS0ix residency is available after IP number $counter LTR ignore\n"
       let ltr_failed_ip=$l+1 &&
@@ -1295,10 +1296,10 @@ debug_acpi_dsm() {
   echo 0 >/sys/class/rtc/rtc0/wakealarm
   echo +$duration >/sys/class/rtc/rtc0/wakealarm
 
-  if turbostat_after_s2idle=$("$DIR"/turbostat --quiet --show "$TURBO_COLUMNS" \
+  if turbostat_after_s2idle=$("$DIR"/turbostat --quiet --show "SYS%LPI" \
     echo freeze 2>&1 >/sys/power/state); then
     slp_s0=$(echo "$turbostat_after_s2idle" | sed -n '/SYS\%LPI/{n;p}' |
-      awk '{print $12}')
+      awk '{print $1}')
   else
     log_output "\nThe system failed to place S2idle entry command, please re-try.\n"
     exit 0
